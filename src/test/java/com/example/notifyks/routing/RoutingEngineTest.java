@@ -9,21 +9,17 @@ import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
+import org.junit.jupiter.api.Test;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.TopologyTestDriver;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
 import org.apache.kafka.streams.TestInputTopic;
 import org.apache.kafka.streams.TestOutputTopic;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
-import java.util.Properties;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import java.util.*;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class RoutingEngineTest {
@@ -47,8 +43,6 @@ public class RoutingEngineTest {
         Properties props = new Properties();
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, "test-app");
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "dummy:9092");
-        props.put("kafka.streams.input-topic", "events");
-        props.put("kafka.streams.output-topic", "notify-send");
 
         driver = new TopologyTestDriver(topology, props);
 
@@ -81,8 +75,8 @@ public class RoutingEngineTest {
 
         RoutingEngine engine = new RoutingEngine(props);
         var event = Map.<String,Object>of("eventType","USER_REGISTERED","priority","HIGH");
-        Set<ChannelType> out = engine.route(event);
-        assertEquals(Set.of(ChannelType.EMAIL, ChannelType.SMS, ChannelType.WEBHOOK), out);
+        Set<ChannelType> result = engine.route(event);
+        assertEquals(Set.of(ChannelType.EMAIL, ChannelType.SMS, ChannelType.WEBHOOK), result);
     }
 
     @AfterEach
