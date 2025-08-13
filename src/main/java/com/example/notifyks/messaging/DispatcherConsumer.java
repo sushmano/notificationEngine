@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
-import org.springframework.kafka.retrytopic.BackOffValues;
 import org.springframework.kafka.retrytopic.DltStrategy;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -32,7 +31,7 @@ public class DispatcherConsumer {
 
     @RetryableTopic(
         attempts = "5",
-        backoff = @BackOffValues(delay = 1000, multiplier = 2.0),
+        backoff = @org.springframework.retry.annotation.Backoff(delay = 1000, multiplier = 2.0),
         dltStrategy = DltStrategy.ALWAYS_RETRY_ON_ERROR,
         include = { Exception.class }
     )
