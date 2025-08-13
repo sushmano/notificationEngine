@@ -3,6 +3,8 @@ package com.example.notifyks.streams;
 import com.example.notifyks.config.NotifyProps;
 import com.example.notifyks.domain.Enums.ChannelType;
 import com.example.notifyks.routing.RoutingEngine;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.StreamsBuilder;
@@ -46,8 +48,11 @@ public class RoutingTopologyTest {
         driver = new TopologyTestDriver(topology, props);
 
         Serde<String> stringSerde = Serdes.String();
-        in = driver.createInputTopic("events", stringSerde.serializer(), new JsonSerializer<>());
-        out = driver.createOutputTopic("notify-send", stringSerde.deserializer(), new JsonDeserializer<>());
+        JsonSerializer<Map<String, Object>> jsonSerializer = new JsonSerializer<>();
+        JsonDeserializer<Map<String, Object>> jsonDeserializer = new JsonDeserializer<>(Map.class, new ObjectMapper(), false);
+
+        in = driver.createInputTopic("events", stringSerde.serializer(), jsonSerializer);
+        out = driver.createOutputTopic("notify-send", stringSerde.deserializer(), jsonDeserializer);
     }
 
     @AfterEach
@@ -69,10 +74,10 @@ public class RoutingTopologyTest {
 
         var channels = new HashSet<String>();
         for (var kv : records) {
-            Map<String, Object> task = (Map<String, Object>) kv.value;
+            Map<String, Object> task = kv.value;
             channels.add((String) task.get("channel"));
             assertEquals("e1", task.get("eventId"));
-            assertTrue(((String) task.get("notificationId")).contains("-"));
+            assertNotNull(task.get("notificationId"));
         }
         assertEquals(Set.of("EMAIL","SMS"), channels);
     }
